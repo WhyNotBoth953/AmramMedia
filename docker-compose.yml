@@ -12,16 +12,26 @@ services:
       - TZ=${TZ}
       - VERSION=docker
       - PLEX_CLAIM=${PLEX_CLAIM}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
     volumes:
       - ${CONFIG_PATH}/plex:/config
       - /mnt/ssd/Movies:/movies
       - /mnt/ssd/Series:/tv
       - /mnt/ssd/Lectures:/lectures
+    devices:
+      - /dev/dri:/dev/dri
+    runtime: nvidia
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 4G
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, video, compute]
 
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
@@ -82,11 +92,14 @@ services:
       - "8080:8080"
       - "6881:6881"
       - "6881:6881/udp"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 2G
 
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
