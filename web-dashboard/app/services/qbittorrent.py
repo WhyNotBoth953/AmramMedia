@@ -39,5 +39,28 @@ class QBittorrentClient:
     async def get_transfer_info(self) -> dict:
         return await self._get("transfer/info")
 
+    async def delete_torrents_by_name(self, name: str) -> int:
+        """Delete torrents whose name contains the given string. Returns count deleted."""
+        torrents = await self.get_torrents()
+        name_lower = name.lower()
+        hashes = [t["hash"] for t in torrents if name_lower in t.get("name", "").lower()]
+        if hashes:
+            await self._post(
+                "torrents/delete",
+                data={"hashes": "|".join(hashes), "deleteFiles": "true"},
+            )
+        return len(hashes)
+
+    async def _post(self, endpoint: str, data: dict) -> None:
+        async with aiohttp.ClientSession(cookie_jar=self._cookie_jar) as session:
+            async with session.post(
+                f"{self.base_url}/api/v2/{endpoint}",
+                data=data,
+            ) as resp:
+                if resp.status == 403:
+                    await self.login()
+                    return await self._post(endpoint, data)
+                resp.raise_for_status()
+
 
 qbt = QBittorrentClient()

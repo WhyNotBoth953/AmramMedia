@@ -13,4 +13,7 @@ QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD", "adminadmin")
 BAZARR_URL = os.environ.get("BAZARR_URL", "http://bazarr:6767")
 BAZARR_API_KEY = os.environ.get("BAZARR_API_KEY", "")
 
+PLEX_URL = os.environ.get("PLEX_URL", "http://172.18.0.1:32400")
+PLEX_TOKEN = os.environ.get("PLEX_TOKEN", "")
+
 SSD_MOUNT_PATH = "/mnt/ssd"

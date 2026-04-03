@@ -1,7 +1,13 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from app.services.plex import plex
+from app.services.qbittorrent import qbt
 from app.services.sonarr import sonarr
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -42,7 +48,22 @@ async def get_series():
 @router.delete("/api/series/{series_id}")
 async def delete_series(series_id: int):
     try:
+        # Get series title before deleting so we can clean up torrents
+        all_series = await sonarr.get_series()
+        series = next((s for s in all_series if s.get("id") == series_id), None)
+        title = series.get("title", "") if series else ""
+
         await sonarr.delete_series(series_id)
+
+        # Clean up related torrents from qBittorrent
+        if title:
+            removed = await qbt.delete_torrents_by_name(title)
+            if removed:
+                logger.info("Removed %d torrent(s) for '%s'", removed, title)
+
+        # Trigger Plex library scan so the show disappears immediately
+        await plex.scan_library()
+
         return {"status": "deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

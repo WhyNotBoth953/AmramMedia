@@ -1,7 +1,13 @@
+import logging
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from app.services.plex import plex
+from app.services.qbittorrent import qbt
 from app.services.radarr import radarr
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -39,7 +45,22 @@ async def get_movies():
 @router.delete("/api/movies/{movie_id}")
 async def delete_movie(movie_id: int):
     try:
+        # Get movie title before deleting so we can clean up torrents
+        all_movies = await radarr.get_movies()
+        movie = next((m for m in all_movies if m.get("id") == movie_id), None)
+        title = movie.get("title", "") if movie else ""
+
         await radarr.delete_movie(movie_id)
+
+        # Clean up related torrents from qBittorrent
+        if title:
+            removed = await qbt.delete_torrents_by_name(title)
+            if removed:
+                logger.info("Removed %d torrent(s) for '%s'", removed, title)
+
+        # Trigger Plex library scan so the movie disappears immediately
+        await plex.scan_library()
+
         return {"status": "deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
