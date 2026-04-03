@@ -44,19 +44,39 @@ class RadarrClient:
     async def search(self, query: str) -> list[dict]:
         return await self._get("movie/lookup", params={"term": query})
 
-    async def add_movie(self, movie: dict) -> dict:
+    async def _put(self, endpoint: str, data: dict) -> dict:
+        async with aiohttp.ClientSession() as session:
+            async with session.put(
+                f"{self.base_url}/api/v3/{endpoint}",
+                headers=self.headers,
+                json=data,
+            ) as resp:
+                resp.raise_for_status()
+                return await resp.json()
+
+    async def add_movie(self, movie: dict, monitored: bool = True) -> dict:
         payload = {
             "title": movie["title"],
             "tmdbId": movie["tmdbId"],
             "year": movie.get("year", 0),
             "qualityProfileId": 1,
             "rootFolderPath": "/movies",
-            "monitored": True,
-            "addOptions": {"searchForMovie": True},
+            "monitored": monitored,
+            "addOptions": {"searchForMovie": monitored},
         }
         if "images" in movie:
             payload["images"] = movie["images"]
         return await self._post("movie", payload)
+
+    async def activate_movie(self, movie_id: int) -> dict:
+        all_movies = await self.get_movies()
+        movie = next((m for m in all_movies if m.get("id") == movie_id), None)
+        if not movie:
+            raise Exception("Movie not found")
+        movie["monitored"] = True
+        updated = await self._put(f"movie/{movie_id}", movie)
+        await self._post("command", {"name": "MoviesSearch", "movieIds": [movie_id]})
+        return updated
 
     async def get_movies(self) -> list[dict]:
         return await self._get("movie")

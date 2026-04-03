@@ -24,18 +24,20 @@ async def get_dashboard():
     result = {}
 
     if isinstance(movies, list):
+        active_movies = [m for m in movies if m.get("monitored")]
         result["movies"] = {
-            "total": len(movies),
-            "downloaded": sum(1 for m in movies if m.get("hasFile")),
+            "total": len(active_movies),
+            "downloaded": sum(1 for m in active_movies if m.get("hasFile")),
         }
     else:
         result["movies"] = {"total": 0, "downloaded": 0, "error": str(movies)}
 
     if isinstance(series, list):
-        total_eps = sum(s.get("statistics", {}).get("totalEpisodeCount", 0) for s in series)
-        have_eps = sum(s.get("statistics", {}).get("episodeFileCount", 0) for s in series)
+        active_series = [s for s in series if s.get("monitored")]
+        total_eps = sum(s.get("statistics", {}).get("totalEpisodeCount", 0) for s in active_series)
+        have_eps = sum(s.get("statistics", {}).get("episodeFileCount", 0) for s in active_series)
         result["series"] = {
-            "total": len(series),
+            "total": len(active_series),
             "totalEpisodes": total_eps,
             "downloadedEpisodes": have_eps,
         }

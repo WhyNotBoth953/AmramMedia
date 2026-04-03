@@ -91,6 +91,26 @@ function downloadItem(d) {
         </div>`;
 }
 
+function wishlistCard(item) {
+    const poster = item.poster || '';
+    const imgTag = poster
+        ? `<img src="${poster}" alt="${item.title}" loading="lazy">`
+        : `<img src="" alt="${item.title}" style="background:var(--bg-input)">`;
+    const typeLabel = item.type === 'movie' ? 'Movie' : 'Series';
+    const extra = item.type === 'series' ? ` · ${item.seasonCount} seasons` : '';
+    return `
+        <div class="media-card" data-id="${item.id}" data-type="${item.type}">
+            <button class="delete-btn" onclick="wishlistRemove('${item.type}', ${item.id}, '${item.title.replace(/'/g, "\\'")}')">✕</button>
+            <span class="badge badge-wishlist">${typeLabel}</span>
+            ${imgTag}
+            <div class="info">
+                <div class="title" title="${item.title}">${item.title}</div>
+                <div class="meta">${item.year}${extra}</div>
+                <button class="btn btn-sm btn-success wishlist-dl-btn" onclick="wishlistDownload('${item.type}', ${item.id}, this)">Download</button>
+            </div>
+        </div>`;
+}
+
 function searchResultCard(item) {
     const poster = item.poster || '';
     const imgTag = poster
@@ -110,7 +130,7 @@ function searchResultCard(item) {
                 <div class="result-year">${item.year}${extra}</div>
                 <div class="result-overview">${item.overview || ''}</div>
             </div>
-            <button class="btn btn-sm btn-success" onclick="addMedia('${item.type}', ${addId}, this)">+ Add</button>
+            <button class="btn btn-sm btn-success" onclick="addMedia('${item.type}', ${addId}, this)">+ Wishlist</button>
         </div>`;
 }
 

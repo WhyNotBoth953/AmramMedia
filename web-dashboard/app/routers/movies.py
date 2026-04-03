@@ -39,7 +39,7 @@ def _shape_movie(m: dict) -> dict:
 @router.get("/api/movies")
 async def get_movies():
     movies = await radarr.get_movies()
-    return [_shape_movie(m) for m in movies]
+    return [_shape_movie(m) for m in movies if m.get("monitored")]
 
 
 @router.delete("/api/movies/{movie_id}")
@@ -77,7 +77,7 @@ async def add_movie(req: AddMovieRequest):
         movie = next((m for m in results if m.get("tmdbId") == req.tmdbId), None)
         if not movie:
             raise HTTPException(status_code=404, detail="Movie not found")
-        added = await radarr.add_movie(movie)
+        added = await radarr.add_movie(movie, monitored=False)
         return _shape_movie(added)
     except HTTPException:
         raise

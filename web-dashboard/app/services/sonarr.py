@@ -46,22 +46,47 @@ class SonarrClient:
     async def search(self, query: str) -> list[dict]:
         return await self._get("series/lookup", params={"term": query})
 
-    async def add_series(self, series: dict) -> dict:
+    async def _put(self, endpoint: str, data: dict) -> dict:
+        async with aiohttp.ClientSession() as session:
+            async with session.put(
+                f"{self.base_url}/api/v3/{endpoint}",
+                headers=self.headers,
+                json=data,
+            ) as resp:
+                resp.raise_for_status()
+                return await resp.json()
+
+    async def add_series(self, series: dict, monitored: bool = True) -> dict:
         payload = {
             "title": series["title"],
             "tvdbId": series["tvdbId"],
             "year": series.get("year", 0),
             "qualityProfileId": 1,
             "rootFolderPath": "/tv",
-            "monitored": True,
+            "monitored": monitored,
             "seasonFolder": True,
-            "addOptions": {"monitor": "all", "searchForMissingEpisodes": True},
+            "addOptions": {
+                "monitor": "all" if monitored else "none",
+                "searchForMissingEpisodes": monitored,
+            },
         }
         if "images" in series:
             payload["images"] = series["images"]
         if "seasons" in series:
             payload["seasons"] = series["seasons"]
         return await self._post("series", payload)
+
+    async def activate_series(self, series_id: int) -> dict:
+        all_series = await self.get_series()
+        series = next((s for s in all_series if s.get("id") == series_id), None)
+        if not series:
+            raise Exception("Series not found")
+        series["monitored"] = True
+        for season in series.get("seasons", []):
+            season["monitored"] = True
+        updated = await self._put(f"series/{series_id}", series)
+        await self._post("command", {"name": "SeriesSearch", "seriesId": series_id})
+        return updated
 
     async def get_series(self) -> list[dict]:
         return await self._get("series")

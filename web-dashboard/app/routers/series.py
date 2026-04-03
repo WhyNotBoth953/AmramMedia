@@ -42,7 +42,7 @@ def _shape_series(s: dict) -> dict:
 @router.get("/api/series")
 async def get_series():
     series = await sonarr.get_series()
-    return [_shape_series(s) for s in series]
+    return [_shape_series(s) for s in series if s.get("monitored")]
 
 
 @router.delete("/api/series/{series_id}")
@@ -80,7 +80,7 @@ async def add_series(req: AddSeriesRequest):
         series = next((s for s in results if s.get("tvdbId") == req.tvdbId), None)
         if not series:
             raise HTTPException(status_code=404, detail="Series not found")
-        added = await sonarr.add_series(series)
+        added = await sonarr.add_series(series, monitored=False)
         return _shape_series(added)
     except HTTPException:
         raise

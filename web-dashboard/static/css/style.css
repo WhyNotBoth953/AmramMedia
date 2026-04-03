@@ -169,6 +169,14 @@ main {
 
 .badge-ok { background: var(--success); color: #000; }
 .badge-missing { background: var(--warning); color: #000; }
+.badge-wishlist { background: var(--accent); color: #fff; }
+
+.wishlist-dl-btn {
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 0.35rem 0;
+    font-size: 0.75rem;
+}
 
 .media-card .delete-btn {
     position: absolute;

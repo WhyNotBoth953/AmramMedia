@@ -24,6 +24,7 @@ function route() {
         case 'movies': renderMovies(); break;
         case 'series': renderSeries(); break;
         case 'downloads': renderDownloads(); break;
+        case 'wishlist': renderWishlist(); break;
         case 'search': renderSearch(); break;
         default: renderDashboard();
     }
@@ -171,7 +172,69 @@ async function doSearch() {
     }
 }
 
-// Add media from search results
+// Wishlist
+async function renderWishlist() {
+    const content = document.getElementById('content');
+    try {
+        const items = await fetch('/api/wishlist').then(r => r.json());
+        let html = `
+            <div class="toolbar">
+                <h2>Wishlist (${items.length})</h2>
+                <input type="text" class="filter-input" placeholder="Filter..." oninput="filterCards(this.value)">
+            </div>`;
+        if (items.length === 0) {
+            html += '<div class="empty">Wishlist is empty. Use Search to add items.</div>';
+        } else {
+            html += '<div class="card-grid">';
+            html += items.map(wishlistCard).join('');
+            html += '</div>';
+        }
+        content.innerHTML = html;
+    } catch (e) {
+        content.innerHTML = `<div class="empty">Failed to load wishlist: ${e.message}</div>`;
+    }
+}
+
+async function wishlistDownload(type, id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Starting...';
+    try {
+        const resp = await fetch(`/api/wishlist/${type}/${id}/download`, { method: 'POST' });
+        if (resp.ok) {
+            const card = btn.closest('.media-card');
+            if (card) card.remove();
+            const countEl = document.querySelector('.toolbar h2');
+            if (countEl) {
+                const remaining = document.querySelectorAll('.media-card').length;
+                countEl.textContent = `Wishlist (${remaining})`;
+            }
+        } else {
+            btn.textContent = 'Failed';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        btn.textContent = 'Failed';
+        btn.disabled = false;
+    }
+}
+
+function wishlistRemove(type, id, title) {
+    showModal(
+        `Remove ${title}?`,
+        'This will remove it from your wishlist (no files will be deleted).',
+        async () => {
+            try {
+                await fetch(`/api/wishlist/${type}/${id}`, { method: 'DELETE' });
+                const card = document.querySelector(`.media-card[data-id="${id}"][data-type="${type}"]`);
+                if (card) card.remove();
+            } catch (e) {
+                alert(`Remove failed: ${e.message}`);
+            }
+        }
+    );
+}
+
+// Add media from search results (adds to wishlist)
 async function addMedia(type, id, btn) {
     btn.disabled = true;
     btn.textContent = 'Adding...';
@@ -185,7 +248,7 @@ async function addMedia(type, id, btn) {
             body: JSON.stringify(body),
         });
         if (resp.ok) {
-            btn.textContent = 'Added!';
+            btn.textContent = 'Wishlisted!';
             btn.className = 'btn btn-sm';
             btn.style.background = 'var(--success)';
         } else {
