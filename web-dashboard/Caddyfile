@@ -1,0 +1,8 @@
+{
+	auto_https disable_redirects
+}
+
+media.danielam.co.il {
+	tls internal
+	reverse_proxy web-dashboard:8000
+}

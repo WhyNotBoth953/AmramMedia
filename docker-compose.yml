@@ -208,6 +208,41 @@ services:
         limits:
           memory: 128M
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    networks:
+      - media-net
+    volumes:
+      - ./web-dashboard/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - web-dashboard
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    networks:
+      - media-net
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      - caddy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
 networks:
   media-net:
     driver: bridge
+
+volumes:
+  caddy_data:

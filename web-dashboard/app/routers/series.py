@@ -21,16 +21,26 @@ def _shape_series(s: dict) -> dict:
             poster = img.get("remoteUrl", "") or img.get("url", "")
         elif img.get("coverType") == "fanart":
             fanart = img.get("remoteUrl", "") or img.get("url", "")
-    stats = s.get("statistics", {})
+    # Count only aired official episodes (exclude Season 0 and unaired)
+    total_eps = 0
+    downloaded_eps = 0
+    size = 0
+    for season in s.get("seasons", []):
+        if season.get("seasonNumber", 0) == 0:
+            continue
+        ss = season.get("statistics", {})
+        total_eps += ss.get("episodeCount", 0)
+        downloaded_eps += ss.get("episodeFileCount", 0)
+        size += ss.get("sizeOnDisk", 0)
     return {
         "id": s.get("id"),
         "title": s.get("title", ""),
         "year": s.get("year", 0),
         "overview": s.get("overview", ""),
         "seasonCount": s.get("seasonCount", 0),
-        "totalEpisodes": stats.get("totalEpisodeCount", 0),
-        "downloadedEpisodes": stats.get("episodeFileCount", 0),
-        "sizeOnDisk": stats.get("sizeOnDisk", 0),
+        "totalEpisodes": total_eps,
+        "downloadedEpisodes": downloaded_eps,
+        "sizeOnDisk": size,
         "tvdbId": s.get("tvdbId", 0),
         "poster": poster,
         "fanart": fanart,
