@@ -50,7 +50,7 @@ class SonarrClient:
         """Search for series by title."""
         return await self._get("series/lookup", params={"term": query})
 
-    async def add_series(self, series: dict) -> dict:
+    async def add_series(self, series: dict, monitored: bool = True) -> dict:
         """Add a series to Sonarr."""
         payload = {
             "title": series["title"],
@@ -58,11 +58,11 @@ class SonarrClient:
             "year": series.get("year", 0),
             "qualityProfileId": 1,
             "rootFolderPath": "/tv",
-            "monitored": True,
+            "monitored": monitored,
             "seasonFolder": True,
             "addOptions": {
-                "monitor": "all",
-                "searchForMissingEpisodes": True,
+                "monitor": "all" if monitored else "none",
+                "searchForMissingEpisodes": monitored,
             },
         }
         if "images" in series:
@@ -70,6 +70,25 @@ class SonarrClient:
         if "seasons" in series:
             payload["seasons"] = series["seasons"]
         return await self._post("series", payload)
+
+    async def activate_series(self, series_id: int) -> dict:
+        """Enable monitoring and trigger search for a wishlisted series."""
+        all_series = await self.get_series()
+        series = next((s for s in all_series if s.get("id") == series_id), None)
+        if not series:
+            raise Exception("Series not found")
+        series["monitored"] = True
+        for season in series.get("seasons", []):
+            season["monitored"] = True
+        async with aiohttp.ClientSession() as session:
+            async with session.put(
+                f"{self.base_url}/api/v3/series/{series_id}",
+                headers=self.headers,
+                json=series,
+            ) as resp:
+                resp.raise_for_status()
+        await self._post("command", {"name": "SeriesSearch", "seriesId": series_id})
+        return series
 
     async def get_series(self) -> list[dict]:
         """Get all series in library."""

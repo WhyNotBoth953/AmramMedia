@@ -25,9 +25,11 @@ def _shape_series(s: dict) -> dict:
     total_eps = 0
     downloaded_eps = 0
     size = 0
+    season_count = 0
     for season in s.get("seasons", []):
         if season.get("seasonNumber", 0) == 0:
             continue
+        season_count += 1
         ss = season.get("statistics", {})
         total_eps += ss.get("episodeCount", 0)
         downloaded_eps += ss.get("episodeFileCount", 0)
@@ -37,7 +39,7 @@ def _shape_series(s: dict) -> dict:
         "title": s.get("title", ""),
         "year": s.get("year", 0),
         "overview": s.get("overview", ""),
-        "seasonCount": s.get("seasonCount", 0),
+        "seasonCount": season_count,
         "totalEpisodes": total_eps,
         "downloadedEpisodes": downloaded_eps,
         "sizeOnDisk": size,
@@ -81,6 +83,7 @@ async def delete_series(series_id: int):
 
 class AddSeriesRequest(BaseModel):
     tvdbId: int
+    download: bool = False
 
 
 @router.post("/api/series")
@@ -90,7 +93,7 @@ async def add_series(req: AddSeriesRequest):
         series = next((s for s in results if s.get("tvdbId") == req.tvdbId), None)
         if not series:
             raise HTTPException(status_code=404, detail="Series not found")
-        added = await sonarr.add_series(series, monitored=False)
+        added = await sonarr.add_series(series, monitored=req.download)
         return _shape_series(added)
     except HTTPException:
         raise

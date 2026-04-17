@@ -21,6 +21,9 @@ body {
     background: var(--bg-primary);
     color: var(--text);
     min-height: 100vh;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Nav - desktop: top bar, mobile: bottom tab bar */
@@ -169,6 +172,7 @@ main {
 
 .badge-ok { background: var(--success); color: #000; }
 .badge-missing { background: var(--warning); color: #000; }
+.badge-warn { background: var(--warning); color: #000; }
 .badge-wishlist { background: var(--accent); color: #fff; }
 
 .wishlist-dl-btn {
@@ -276,6 +280,40 @@ main {
 
 .btn-success { background: var(--success); color: #000; }
 .btn-danger { background: var(--danger); }
+.btn-restart { background: var(--bg-input); color: var(--text); border: 1px solid var(--border); }
+.btn-restart:hover { border-color: var(--accent); color: var(--accent); background: var(--bg-input); }
+
+/* Services Grid */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.service-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    text-align: center;
+}
+
+.service-card .service-icon { font-size: 2rem; }
+
+.service-card .service-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.service-card .badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+}
 
 /* Search Results */
 .search-result {
@@ -302,6 +340,16 @@ main {
 .search-result .result-title { font-weight: 600; font-size: 1rem; }
 .search-result .result-year { color: var(--text-muted); font-size: 0.85rem; }
 .search-result .result-overview { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; }
+.result-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.btn-download { background: #4a90d9; color: #fff; }
+.btn-download:hover { background: #5aa0e9; }
+
 .search-result .result-type {
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -446,10 +494,10 @@ main {
         font-size: 1.2rem;
     }
 
-    /* Main content padding for bottom nav */
+    /* Main content padding for bottom nav (body handles top safe-area) */
     main {
         padding: 1rem;
-        padding-bottom: 5rem;
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
     }
 
     /* Stat cards: 2 columns on mobile */

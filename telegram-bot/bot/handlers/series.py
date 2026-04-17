@@ -39,12 +39,10 @@ async def series_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         tvdb_id = show.get("tvdbId", 0)
         title = show.get("title", "Unknown")
         year = show.get("year", "")
-        buttons.append(
-            [InlineKeyboardButton(
-                f"➕ {title} ({year})",
-                callback_data=f"add_series:{tvdb_id}",
-            )]
-        )
+        buttons.append([
+            InlineKeyboardButton(f"📺 {title} ({year}) 📋", callback_data=f"wl_series:{tvdb_id}"),
+            InlineKeyboardButton("⬇️", callback_data=f"dl_series:{tvdb_id}"),
+        ])
 
     text = truncate("\n\n".join(parts))
     await update.message.reply_text(

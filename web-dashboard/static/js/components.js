@@ -130,7 +130,10 @@ function searchResultCard(item) {
                 <div class="result-year">${item.year}${extra}</div>
                 <div class="result-overview">${item.overview || ''}</div>
             </div>
-            <button class="btn btn-sm btn-success" onclick="addMedia('${item.type}', ${addId}, this)">+ Wishlist</button>
+            <div class="result-actions">
+                <button class="btn btn-sm btn-success" onclick="addMedia('${item.type}', ${addId}, this)">+ Wishlist</button>
+                <button class="btn btn-sm btn-download" onclick="downloadMedia('${item.type}', ${addId}, this)">⬇ Download</button>
+            </div>
         </div>`;
 }
 
@@ -142,6 +145,22 @@ function upcomingItem(ep) {
                 <div class="ep-title">${ep.title}</div>
             </div>
             <div class="ep-date">${ep.airDate}</div>
+        </div>`;
+}
+
+function serviceCard(svc) {
+    const statusClass = svc.status === 'running' ? 'badge-ok' : svc.status === 'restarting' ? 'badge-warn' : 'badge-missing';
+    const statusLabel = svc.status === 'not_found' ? 'not found' : svc.status;
+    const icon = {
+        plex: '📺', sonarr: '📡', radarr: '🎬', qbittorrent: '⬇️',
+        bazarr: '💬', prowlarr: '🔍', 'telegram-bot': '🤖', 'web-dashboard': '🖥️',
+    }[svc.name] || '⚙️';
+    return `
+        <div class="service-card">
+            <div class="service-icon">${icon}</div>
+            <div class="service-name">${svc.name}</div>
+            <span class="badge ${statusClass}">${statusLabel}</span>
+            <button class="btn btn-sm btn-restart" onclick="restartService('${svc.name}', this)">Restart</button>
         </div>`;
 }
 

@@ -39,12 +39,10 @@ async def movie_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         tmdb_id = movie.get("tmdbId", 0)
         title = movie.get("title", "Unknown")
         year = movie.get("year", "")
-        buttons.append(
-            [InlineKeyboardButton(
-                f"➕ {title} ({year})",
-                callback_data=f"add_movie:{tmdb_id}",
-            )]
-        )
+        buttons.append([
+            InlineKeyboardButton(f"🎬 {title} ({year}) 📋", callback_data=f"wl_movie:{tmdb_id}"),
+            InlineKeyboardButton("⬇️", callback_data=f"dl_movie:{tmdb_id}"),
+        ])
 
     text = truncate("\n\n".join(parts))
     await update.message.reply_text(

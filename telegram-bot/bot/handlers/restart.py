@@ -8,7 +8,10 @@ from bot.utils.auth import restricted
 
 logger = logging.getLogger(__name__)
 
-ALLOWED_CONTAINERS = {"plex", "sonarr", "radarr", "qbittorrent", "bazarr", "prowlarr"}
+ALLOWED_CONTAINERS = {
+    "plex", "sonarr", "radarr", "qbittorrent",
+    "bazarr", "prowlarr", "telegram-bot", "web-dashboard",
+}
 
 
 @restricted

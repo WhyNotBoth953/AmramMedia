@@ -26,6 +26,7 @@ function route() {
         case 'downloads': renderDownloads(); break;
         case 'wishlist': renderWishlist(); break;
         case 'search': renderSearch(); break;
+        case 'services': renderServices(); break;
         default: renderDashboard();
     }
 }
@@ -234,6 +235,35 @@ function wishlistRemove(type, id, title) {
     );
 }
 
+// Download media directly (bypasses wishlist, starts downloading immediately)
+async function downloadMedia(type, id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Starting...';
+    const endpoint = type === 'movie' ? '/api/movies' : '/api/series';
+    const body = type === 'movie' ? { tmdbId: id, download: true } : { tvdbId: id, download: true };
+
+    try {
+        const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (resp.ok) {
+            btn.textContent = 'Downloading!';
+            btn.style.background = 'var(--success)';
+            btn.style.color = '#000';
+        } else {
+            const err = await resp.json();
+            btn.textContent = err.detail || 'Error';
+            btn.style.background = 'var(--warning)';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        btn.textContent = 'Failed';
+        btn.disabled = false;
+    }
+}
+
 // Add media from search results (adds to wishlist)
 async function addMedia(type, id, btn) {
     btn.disabled = true;
@@ -280,6 +310,40 @@ function confirmDelete(id, type, title) {
             }
         }
     );
+}
+
+// Services
+async function renderServices() {
+    const content = document.getElementById('content');
+    try {
+        const services = await fetch('/api/services').then(r => r.json());
+        let html = `<div class="toolbar"><h2>Services</h2></div>
+            <div class="services-grid">`;
+        html += services.map(serviceCard).join('');
+        html += '</div>';
+        content.innerHTML = html;
+    } catch (e) {
+        content.innerHTML = `<div class="empty">Failed to load services: ${e.message}</div>`;
+    }
+}
+
+async function restartService(name, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Restarting...';
+    try {
+        const resp = await fetch(`/api/services/${name}/restart`, { method: 'POST' });
+        if (resp.ok) {
+            btn.textContent = 'Restarted';
+            setTimeout(() => renderServices(), 3000);
+        } else {
+            const err = await resp.json();
+            btn.textContent = err.detail || 'Error';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        btn.textContent = 'Failed';
+        btn.disabled = false;
+    }
 }
 
 // Filter cards by title

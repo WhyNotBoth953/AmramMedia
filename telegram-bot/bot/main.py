@@ -12,8 +12,11 @@ from bot.handlers.movie import movie_handler
 from bot.handlers.restart import restart_handler
 from bot.handlers.search import search_handler
 from bot.handlers.series import series_handler
+from bot.handlers.services import services_handler
 from bot.handlers.status import status_handler
+from bot.handlers.subtitles import subtitles_handler
 from bot.handlers.upcoming import upcoming_handler
+from bot.handlers.wishlist import wishlist_handler
 from bot.notifications.poller import poll_completed_downloads
 
 logging.basicConfig(
@@ -29,13 +32,16 @@ async def start_handler(update, context):
         "🎬 *AmramMedia Bot*\n\n"
         "Available commands:\n"
         "/search <query> - Search movies & series\n"
-        "/movie <title> - Add a movie\n"
-        "/series <title> - Add a series\n"
+        "/movie <title> - Search movies\n"
+        "/series <title> - Search series\n"
+        "/wishlist - View & manage wishlist\n"
         "/status - Active downloads\n"
         "/library - Library stats\n"
         "/upcoming - Upcoming episodes\n"
+        "/subtitles - Missing subtitles\n"
         "/delete <title> - Remove from library\n"
         "/disk - Disk usage\n"
+        "/services - Service status\n"
         "/restart <service> - Restart a service",
         parse_mode="Markdown",
     )
@@ -55,20 +61,20 @@ def main() -> None:
         .build()
     )
 
-    # Command handlers
     app.add_handler(CommandHandler("start", start_handler))
     app.add_handler(CommandHandler("help", start_handler))
     app.add_handler(CommandHandler("search", search_handler))
     app.add_handler(CommandHandler("movie", movie_handler))
     app.add_handler(CommandHandler("series", series_handler))
+    app.add_handler(CommandHandler("wishlist", wishlist_handler))
     app.add_handler(CommandHandler("status", status_handler))
     app.add_handler(CommandHandler("library", library_handler))
     app.add_handler(CommandHandler("upcoming", upcoming_handler))
+    app.add_handler(CommandHandler("subtitles", subtitles_handler))
     app.add_handler(CommandHandler("delete", delete_handler))
     app.add_handler(CommandHandler("disk", disk_handler))
+    app.add_handler(CommandHandler("services", services_handler))
     app.add_handler(CommandHandler("restart", restart_handler))
-
-    # Inline keyboard callbacks
     app.add_handler(CallbackQueryHandler(callback_handler))
 
     logger.info("AmramMedia Bot starting...")

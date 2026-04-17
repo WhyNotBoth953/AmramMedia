@@ -42,6 +42,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
+      - DOTNET_SYSTEM_NET_DISABLEIPV6=true
     volumes:
       - ${CONFIG_PATH}/sonarr:/config
       - /mnt/ssd/Series:/tv
@@ -63,6 +64,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
+      - DOTNET_SYSTEM_NET_DISABLEIPV6=true
     volumes:
       - ${CONFIG_PATH}/radarr:/config
       - /mnt/ssd/Movies:/movies
@@ -131,6 +133,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=${TZ}
+      - DOTNET_SYSTEM_NET_DISABLEIPV6=true
     volumes:
       - ${CONFIG_PATH}/prowlarr:/config
     ports:
@@ -160,6 +163,8 @@ services:
       - QBITTORRENT_PASSWORD=${QBITTORRENT_PASSWORD}
       - PLEX_URL=${PLEX_URL:-http://plex:32400}
       - PLEX_TOKEN=${PLEX_TOKEN}
+      - BAZARR_URL=http://bazarr:6767
+      - BAZARR_API_KEY=${BAZARR_API_KEY}
       - POLL_INTERVAL=30
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -195,8 +200,7 @@ services:
       - PLEX_TOKEN=${PLEX_TOKEN}
     volumes:
       - /mnt/ssd:/mnt/ssd:ro
-    ports:
-      - "8000:8000"
+      - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     depends_on:
       - sonarr

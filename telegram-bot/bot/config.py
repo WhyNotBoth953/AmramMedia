@@ -21,6 +21,9 @@ QBITTORRENT_PASSWORD = os.environ.get("QBITTORRENT_PASSWORD", "adminadmin")
 PLEX_URL = os.environ.get("PLEX_URL", "http://plex:32400")
 PLEX_TOKEN = os.environ.get("PLEX_TOKEN", "")
 
+BAZARR_URL = os.environ.get("BAZARR_URL", "http://bazarr:6767")
+BAZARR_API_KEY = os.environ.get("BAZARR_API_KEY", "")
+
 POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL", "30"))
 
 # Paths inside the container

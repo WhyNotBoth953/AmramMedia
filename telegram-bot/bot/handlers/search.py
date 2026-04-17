@@ -42,12 +42,10 @@ async def search_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             tmdb_id = movie.get("tmdbId", 0)
             title = movie.get("title", "Unknown")
             year = movie.get("year", "")
-            buttons.append(
-                [InlineKeyboardButton(
-                    f"🎬 {title} ({year})",
-                    callback_data=f"add_movie:{tmdb_id}",
-                )]
-            )
+            buttons.append([
+                InlineKeyboardButton(f"🎬 {title} ({year}) 📋", callback_data=f"wl_movie:{tmdb_id}"),
+                InlineKeyboardButton("⬇️", callback_data=f"dl_movie:{tmdb_id}"),
+            ])
         parts.append("")
     elif isinstance(movies, Exception):
         parts.append(f"⚠️ Radarr error: {movies}\n")
@@ -60,12 +58,10 @@ async def search_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             tvdb_id = show.get("tvdbId", 0)
             title = show.get("title", "Unknown")
             year = show.get("year", "")
-            buttons.append(
-                [InlineKeyboardButton(
-                    f"📺 {title} ({year})",
-                    callback_data=f"add_series:{tvdb_id}",
-                )]
-            )
+            buttons.append([
+                InlineKeyboardButton(f"📺 {title} ({year}) 📋", callback_data=f"wl_series:{tvdb_id}"),
+                InlineKeyboardButton("⬇️", callback_data=f"dl_series:{tvdb_id}"),
+            ])
     elif isinstance(series, Exception):
         parts.append(f"⚠️ Sonarr error: {series}\n")
 

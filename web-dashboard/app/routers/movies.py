@@ -68,6 +68,7 @@ async def delete_movie(movie_id: int):
 
 class AddMovieRequest(BaseModel):
     tmdbId: int
+    download: bool = False
 
 
 @router.post("/api/movies")
@@ -77,7 +78,7 @@ async def add_movie(req: AddMovieRequest):
         movie = next((m for m in results if m.get("tmdbId") == req.tmdbId), None)
         if not movie:
             raise HTTPException(status_code=404, detail="Movie not found")
-        added = await radarr.add_movie(movie, monitored=False)
+        added = await radarr.add_movie(movie, monitored=req.download)
         return _shape_movie(added)
     except HTTPException:
         raise
